@@ -9,7 +9,7 @@ public static class Autosaver_AutosaverTick
 {
     public static bool Prefix(ref Autosaver __instance, ref int ___ticksSinceSave)
     {
-        var hours = MoreAutosaveSlotsMod.Settings.hours;
+        var hours = MoreAutosaveSlotsMod.Settings.Hours;
         if (hours <= 0)
         {
             return true; // use default implementation

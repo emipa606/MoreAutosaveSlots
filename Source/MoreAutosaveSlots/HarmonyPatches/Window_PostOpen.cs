@@ -9,7 +9,7 @@ public static class Window_PostOpen
 {
     public static void Postfix(ref Window __instance)
     {
-        if (!MoreAutosaveSlotsMod.Settings.useNextSaveName)
+        if (!MoreAutosaveSlotsMod.Settings.UseNextSaveName)
         {
             return;
         }

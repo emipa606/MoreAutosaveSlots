@@ -11,35 +11,35 @@ namespace Revolus.MoreAutosaveSlots;
 
 public class MoreAutosaveSlotsSettings : ModSettings
 {
-    private static readonly int countDefault = 5;
-    private static readonly int countMin = 1;
-    private static readonly int countMax = 60;
+    private const int CountDefault = 5;
+    private const int CountMin = 1;
+    private const int CountMax = 60;
 
-    private static readonly string formatDefault = "{faction} ({index})";
+    private const string FormatDefault = "{faction} ({index})";
 
-    private static readonly int hoursDefault = 0;
-    private static readonly int hoursMin = 0;
-    private static readonly int hoursMax = 15 * 24;
+    private const int HoursDefault = 0;
+    private const int HoursMin = 0;
+    private const int HoursMax = 15 * 24;
 
-    private static readonly bool useNextSaveNameDefault = true;
-    public int count = countDefault;
-    public string format = formatDefault;
-    public int hours = hoursDefault;
-    public bool useNextSaveName = useNextSaveNameDefault;
+    private const bool UseNextSaveNameDefault = true;
+    private int count = CountDefault;
+    private string format = FormatDefault;
+    public int Hours = HoursDefault;
+    public bool UseNextSaveName = UseNextSaveNameDefault;
 
     public override void ExposeData()
     {
-        Scribe_Values.Look(ref count, "count", countDefault);
-        Scribe_Values.Look(ref format, "format", formatDefault);
-        Scribe_Values.Look(ref hours, "hours", hoursDefault);
-        Scribe_Values.Look(ref useNextSaveName, "useNextSaveName", useNextSaveNameDefault);
+        Scribe_Values.Look(ref count, "count", CountDefault);
+        Scribe_Values.Look(ref format, "format", FormatDefault);
+        Scribe_Values.Look(ref Hours, "hours");
+        Scribe_Values.Look(ref UseNextSaveName, "useNextSaveName", UseNextSaveNameDefault);
         base.ExposeData();
     }
 
-    public static string[] AutoSaveNames(bool onlyOne = false)
+    private static string[] autoSaveNames(bool onlyOne = false)
     {
         var settings = MoreAutosaveSlotsMod.Settings;
-        var count = Math.Max(Math.Min(settings.count, countMax), countMin);
+        var count = Math.Max(Math.Min(settings.count, CountMax), CountMin);
         var now = DateTime.Now;
 
         string faction = null;
@@ -95,23 +95,23 @@ public class MoreAutosaveSlotsSettings : ModSettings
 
         if (onlyOne)
         {
-            return [DoFormat(almostFormatted, count)];
+            return [doFormat(almostFormatted, count)];
         }
 
         var result = new string[count];
         for (var i = 0; i < count; i++)
         {
-            result[i] = DoFormat(almostFormatted, i + 1);
+            result[i] = doFormat(almostFormatted, i + 1);
         }
 
         return result;
 
-        string DoFormat(string s, int index)
+        static string doFormat(string s, int index)
         {
             s = GenFile.SanitizedFileName(s.Replace("{index}", index.ToString()));
             if (s.Length > 60)
             {
-                s = s.Substring(0, 60).Trim();
+                s = s[..60].Trim();
             }
 
             return s;
@@ -120,7 +120,7 @@ public class MoreAutosaveSlotsSettings : ModSettings
 
     public static string NextName()
     {
-        var texts = AutoSaveNames();
+        var texts = autoSaveNames();
 
         var text = (from name in texts where !SaveGameFilesUtility.SavedGameNamedExists(name) select name)
             .FirstOrDefault();
@@ -131,14 +131,14 @@ public class MoreAutosaveSlotsSettings : ModSettings
     {
         int countNew, countOld = count;
         string formatNew, formatOld = format;
-        int hoursNew, hoursOld = hours;
-        bool useNextSaveNameNew, useNextSaveNameOld = useNextSaveName;
+        int hoursNew, hoursOld = Hours;
+        bool useNextSaveNameNew, useNextSaveNameOld = UseNextSaveName;
 
         var reset = Widgets.ButtonText(listing.GetRect(Text.LineHeight).RightHalf().LeftHalf().Rounded(),
             "MoreAutosaveSlots.ButtonReset".Translate());
         listing.Gap(listing.verticalSpacing + Text.LineHeight);
 
-        Line("MoreAutosaveSlots.LabelExample".Translate(), AutoSaveNames(true)[0]);
+        line("MoreAutosaveSlots.LabelExample".Translate(), autoSaveNames(true)[0]);
         listing.Gap(Text.LineHeight);
 
         {
@@ -157,7 +157,7 @@ public class MoreAutosaveSlotsSettings : ModSettings
                     ? "MoreAutosaveSlots.CountOne".Translate()
                     : "MoreAutosaveSlots.CountMultiple".Translate(countOld));
             Text.Anchor = TextAnchor.UpperCenter;
-            countNew = Mathf.RoundToInt(Widgets.HorizontalSlider(dataSliderRect, countOld, countMin, countMax));
+            countNew = Mathf.RoundToInt(Widgets.HorizontalSlider(dataSliderRect, countOld, CountMin, CountMax));
 
             listing.Gap(listing.verticalSpacing + Text.LineHeight);
         }
@@ -177,7 +177,7 @@ public class MoreAutosaveSlotsSettings : ModSettings
                          @"\|([^|]*)\|([^|]*)\|\|"))
             {
                 var groups = m.Groups;
-                Line(groups[1].Value, groups[2].Value);
+                line(groups[1].Value, groups[2].Value);
             }
 
             listing.Gap(Text.LineHeight);
@@ -205,7 +205,7 @@ public class MoreAutosaveSlotsSettings : ModSettings
             Text.Anchor = TextAnchor.LowerCenter;
             Widgets.Label(dataDescRect, intervalDescription);
             Text.Anchor = TextAnchor.UpperCenter;
-            hoursNew = (int)Widgets.HorizontalSlider(dataSliderRect, hoursOld, hoursMin, hoursMax, roundTo: 1f);
+            hoursNew = (int)Widgets.HorizontalSlider(dataSliderRect, hoursOld, HoursMin, HoursMax, roundTo: 1f);
 
             listing.Gap(listing.verticalSpacing + Text.LineHeight);
         }
@@ -226,10 +226,10 @@ public class MoreAutosaveSlotsSettings : ModSettings
 
         if (reset)
         {
-            countNew = countDefault;
-            formatNew = formatDefault;
-            hoursNew = hoursDefault;
-            useNextSaveNameNew = useNextSaveNameDefault;
+            countNew = CountDefault;
+            formatNew = FormatDefault;
+            hoursNew = HoursDefault;
+            useNextSaveNameNew = UseNextSaveNameDefault;
         }
 
         var changed = false;
@@ -247,7 +247,7 @@ public class MoreAutosaveSlotsSettings : ModSettings
 
         if (hoursNew != hoursOld)
         {
-            hours = hoursNew;
+            Hours = hoursNew;
             changed = true;
         }
 
@@ -256,11 +256,11 @@ public class MoreAutosaveSlotsSettings : ModSettings
             return changed;
         }
 
-        useNextSaveName = useNextSaveNameNew;
+        UseNextSaveName = useNextSaveNameNew;
 
         return true;
 
-        void Line(string left, string right)
+        void line(string left, string right)
         {
             var wholeRect = listing.GetRect(Text.LineHeight);
 

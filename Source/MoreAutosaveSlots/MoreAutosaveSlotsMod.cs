@@ -20,12 +20,12 @@ public class MoreAutosaveSlotsMod : Mod
         new Harmony(typeof(MoreAutosaveSlotsMod).AssemblyQualifiedName).PatchAll(Assembly.GetExecutingAssembly());
     }
 
-    public override void DoSettingsWindowContents(Rect rect)
+    public override void DoSettingsWindowContents(Rect inRect)
     {
         bool changed;
 
         var listing = new Listing_Standard();
-        listing.Begin(rect);
+        listing.Begin(inRect);
         try
         {
             var oldAnchorValue = Text.Anchor;
@@ -56,7 +56,7 @@ public class MoreAutosaveSlotsMod : Mod
             SoundDefOf.DragSlider.PlayOneShotOnCamera();
         }
 
-        base.DoSettingsWindowContents(rect);
+        base.DoSettingsWindowContents(inRect);
     }
 
     public override string SettingsCategory()

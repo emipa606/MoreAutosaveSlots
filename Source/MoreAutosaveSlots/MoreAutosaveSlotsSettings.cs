@@ -22,10 +22,10 @@ public class MoreAutosaveSlotsSettings : ModSettings
     private const int HoursMax = 15 * 24;
 
     private const bool UseNextSaveNameDefault = true;
-    private int count = CountDefault;
-    private string format = FormatDefault;
     public int Hours = HoursDefault;
     public bool UseNextSaveName = UseNextSaveNameDefault;
+    private int count = CountDefault;
+    private string format = FormatDefault;
 
     public override void ExposeData()
     {
@@ -129,10 +129,10 @@ public class MoreAutosaveSlotsSettings : ModSettings
 
     internal bool ShowAndChangeSettings(Listing_Standard listing)
     {
-        int countNew, countOld = count;
-        string formatNew, formatOld = format;
-        int hoursNew, hoursOld = Hours;
-        bool useNextSaveNameNew, useNextSaveNameOld = UseNextSaveName;
+        var countOld = count;
+        var formatOld = format;
+        var hoursOld = Hours;
+        var useNextSaveNameOld = UseNextSaveName;
 
         var reset = Widgets.ButtonText(listing.GetRect(Text.LineHeight).RightHalf().LeftHalf().Rounded(),
             "MoreAutosaveSlots.ButtonReset".Translate());
@@ -141,88 +141,79 @@ public class MoreAutosaveSlotsSettings : ModSettings
         line("MoreAutosaveSlots.LabelExample".Translate(), autoSaveNames(true)[0]);
         listing.Gap(Text.LineHeight);
 
+        var wholeRect = listing.GetRect(2 * Text.LineHeight);
+        var labelRect = wholeRect.LeftHalf().Rounded();
+        var dataRect = wholeRect.RightHalf().Rounded();
+        var dataDescRect = dataRect.TopHalf().Rounded();
+        var dataSliderRect = dataRect.BottomHalf().Rounded();
+
+        Text.Anchor = TextAnchor.MiddleRight;
+        Widgets.Label(labelRect, "MoreAutosaveSlots.LabelCount".Translate());
+
+        Text.Anchor = TextAnchor.LowerCenter;
+        Widgets.Label(dataDescRect,
+            countOld == 1
+                ? "MoreAutosaveSlots.CountOne".Translate()
+                : "MoreAutosaveSlots.CountMultiple".Translate(countOld));
+        Text.Anchor = TextAnchor.UpperCenter;
+        var countNew = Mathf.RoundToInt(Widgets.HorizontalSlider(dataSliderRect, countOld, CountMin, CountMax));
+
+        listing.Gap(listing.verticalSpacing + Text.LineHeight);
+        wholeRect = listing.GetRect(Text.LineHeight);
+        labelRect = wholeRect.LeftHalf().Rounded();
+        dataRect = wholeRect.RightHalf().Rounded();
+
+        Text.Anchor = TextAnchor.MiddleRight;
+        Widgets.Label(labelRect, "MoreAutosaveSlots.LabelFormat".Translate());
+
+        Text.Anchor = TextAnchor.MiddleCenter;
+        var formatNew = Widgets.TextArea(dataRect.Rounded(), formatOld);
+        listing.Gap(listing.verticalSpacing);
+
+        foreach (var groups in Regex.Matches("MoreAutosaveSlots.FormatDescription".Translate(),
+                     @"\|([^|]*)\|([^|]*)\|\|", RegexOptions.None, TimeSpan.FromSeconds(1)).Select(x => x.Groups))
         {
-            var wholeRect = listing.GetRect(2 * Text.LineHeight);
-            var labelRect = wholeRect.LeftHalf().Rounded();
-            var dataRect = wholeRect.RightHalf().Rounded();
-            var dataDescRect = dataRect.TopHalf().Rounded();
-            var dataSliderRect = dataRect.BottomHalf().Rounded();
-
-            Text.Anchor = TextAnchor.MiddleRight;
-            Widgets.Label(labelRect, "MoreAutosaveSlots.LabelCount".Translate());
-
-            Text.Anchor = TextAnchor.LowerCenter;
-            Widgets.Label(dataDescRect,
-                countOld == 1
-                    ? "MoreAutosaveSlots.CountOne".Translate()
-                    : "MoreAutosaveSlots.CountMultiple".Translate(countOld));
-            Text.Anchor = TextAnchor.UpperCenter;
-            countNew = Mathf.RoundToInt(Widgets.HorizontalSlider(dataSliderRect, countOld, CountMin, CountMax));
-
-            listing.Gap(listing.verticalSpacing + Text.LineHeight);
+            line(groups[1].Value, groups[2].Value);
         }
+
+        listing.Gap(Text.LineHeight);
+        wholeRect = listing.GetRect(2 * Text.LineHeight);
+        labelRect = wholeRect.LeftHalf().Rounded();
+        dataRect = wholeRect.RightHalf().Rounded();
+        dataDescRect = dataRect.TopHalf().Rounded();
+        dataSliderRect = dataRect.BottomHalf().Rounded();
+
+        string intervalDescription;
+        if (hoursOld <= 0)
         {
-            var wholeRect = listing.GetRect(Text.LineHeight);
-            var labelRect = wholeRect.LeftHalf().Rounded();
-            var dataRect = wholeRect.RightHalf().Rounded();
-
-            Text.Anchor = TextAnchor.MiddleRight;
-            Widgets.Label(labelRect, "MoreAutosaveSlots.LabelFormat".Translate());
-
-            Text.Anchor = TextAnchor.MiddleCenter;
-            formatNew = Widgets.TextArea(dataRect.Rounded(), formatOld);
-            listing.Gap(listing.verticalSpacing);
-
-            foreach (Match m in Regex.Matches("MoreAutosaveSlots.FormatDescription".Translate(),
-                         @"\|([^|]*)\|([^|]*)\|\|"))
-            {
-                var groups = m.Groups;
-                line(groups[1].Value, groups[2].Value);
-            }
-
-            listing.Gap(Text.LineHeight);
+            intervalDescription = "MoreAutosaveSlots.HoursDisabled".Translate();
         }
+        else
         {
-            var wholeRect = listing.GetRect(2 * Text.LineHeight);
-            var labelRect = wholeRect.LeftHalf().Rounded();
-            var dataRect = wholeRect.RightHalf().Rounded();
-            var dataDescRect = dataRect.TopHalf().Rounded();
-            var dataSliderRect = dataRect.BottomHalf().Rounded();
-
-            string intervalDescription;
-            if (hoursOld <= 0)
-            {
-                intervalDescription = "MoreAutosaveSlots.HoursDisabled".Translate();
-            }
-            else
-            {
-                intervalDescription = (hoursOld * GenDate.TicksPerHour).ToStringTicksToPeriod();
-            }
-
-            Text.Anchor = TextAnchor.MiddleRight;
-            Widgets.Label(labelRect, "MoreAutosaveSlots.LabelHours".Translate());
-
-            Text.Anchor = TextAnchor.LowerCenter;
-            Widgets.Label(dataDescRect, intervalDescription);
-            Text.Anchor = TextAnchor.UpperCenter;
-            hoursNew = (int)Widgets.HorizontalSlider(dataSliderRect, hoursOld, HoursMin, HoursMax, roundTo: 1f);
-
-            listing.Gap(listing.verticalSpacing + Text.LineHeight);
+            intervalDescription = (hoursOld * GenDate.TicksPerHour).ToStringTicksToPeriod();
         }
-        {
-            var wholeRect = listing.GetRect(Text.LineHeight);
-            var labelRect = wholeRect.LeftHalf().Rounded();
-            var dataRect = wholeRect.RightHalf().Rounded();
 
-            Text.Anchor = TextAnchor.MiddleRight;
-            Widgets.Label(labelRect, "MoreAutosaveSlots.LabelUseNextSaveName".Translate());
+        Text.Anchor = TextAnchor.MiddleRight;
+        Widgets.Label(labelRect, "MoreAutosaveSlots.LabelHours".Translate());
 
-            Text.Anchor = TextAnchor.MiddleLeft;
-            useNextSaveNameNew = useNextSaveNameOld;
-            Widgets.CheckboxLabeled(dataRect, "", ref useNextSaveNameNew, placeCheckboxNearText: true);
+        Text.Anchor = TextAnchor.LowerCenter;
+        Widgets.Label(dataDescRect, intervalDescription);
+        Text.Anchor = TextAnchor.UpperCenter;
+        var hoursNew = (int)Widgets.HorizontalSlider(dataSliderRect, hoursOld, HoursMin, HoursMax, roundTo: 1f);
 
-            listing.Gap(listing.verticalSpacing);
-        }
+        listing.Gap(listing.verticalSpacing + Text.LineHeight);
+        wholeRect = listing.GetRect(Text.LineHeight);
+        labelRect = wholeRect.LeftHalf().Rounded();
+        dataRect = wholeRect.RightHalf().Rounded();
+
+        Text.Anchor = TextAnchor.MiddleRight;
+        Widgets.Label(labelRect, "MoreAutosaveSlots.LabelUseNextSaveName".Translate());
+
+        Text.Anchor = TextAnchor.MiddleLeft;
+        var useNextSaveNameNew = useNextSaveNameOld;
+        Widgets.CheckboxLabeled(dataRect, "", ref useNextSaveNameNew, placeCheckboxNearText: true);
+
+        listing.Gap(listing.verticalSpacing);
 
         if (reset)
         {
@@ -262,13 +253,13 @@ public class MoreAutosaveSlotsSettings : ModSettings
 
         void line(string left, string right)
         {
-            var wholeRect = listing.GetRect(Text.LineHeight);
+            var rect = listing.GetRect(Text.LineHeight);
 
             Text.Anchor = TextAnchor.MiddleRight;
-            Widgets.Label(wholeRect.LeftHalf().Rounded(), left);
+            Widgets.Label(rect.LeftHalf().Rounded(), left);
 
             Text.Anchor = TextAnchor.MiddleLeft;
-            Widgets.Label(wholeRect.RightHalf().Rounded(), right);
+            Widgets.Label(rect.RightHalf().Rounded(), right);
 
             listing.Gap(listing.verticalSpacing);
         }
